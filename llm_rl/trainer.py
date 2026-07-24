@@ -1,5 +1,5 @@
 """
-LLMTrainer main orchestrator module.
+LLMTrainer main orchestrator module with automated background dashboard API.
 """
 
 from typing import Any, List, Optional
@@ -18,8 +18,8 @@ from llm_rl.logger import logger
 
 class LLMTrainer:
     """
-    Main LLM-RL Trainer orchestrating RL training, live monitoring,
-    LLM reasoning backends, policy explanations, and interactive dashboard.
+    Main LLM-RL Trainer orchestrating RL training, live background monitoring,
+    LLM reasoning backends, policy explanations, and real-time dashboard API.
     """
 
     def __init__(
@@ -44,6 +44,7 @@ class LLMTrainer:
 
         self.env_name = info["env_name"]
         self.algorithm_name = info["name"]
+        self._dashboard_url = None
 
         # Instantiate LLM Driver
         if isinstance(llm_backend, BaseLLM):
@@ -66,12 +67,22 @@ class LLMTrainer:
 
         logger.info(f"Initialized LLMTrainer for model {self.algorithm_name} on {self.env_name} with backend '{llm_backend}' ({model_name}).")
 
-    def train(self, total_timesteps: int = 100000, callback: Optional[Any] = None, **kwargs) -> Any:
+    def train(
+        self,
+        total_timesteps: int = 100000,
+        auto_dashboard: bool = True,
+        port: int = 7860,
+        callback: Optional[Any] = None,
+        **kwargs
+    ) -> Any:
         """
         Train the RL agent while attached to LLM-RL monitoring callback.
+        Optionally launches a non-blocking background dashboard API.
 
         Args:
             total_timesteps: Total environment timesteps to train.
+            auto_dashboard: Whether to automatically launch live background dashboard URL.
+            port: Server port for live dashboard API.
             callback: Optional user SB3 callback to combine.
 
         Returns:
@@ -87,15 +98,35 @@ class LLMTrainer:
             else:
                 callbacks.append(callback)
 
+        # Automatically launch non-blocking live dashboard in background thread if requested
+        if auto_dashboard and not self._dashboard_url:
+            try:
+                self._dashboard_url = self.dashboard(port=port)
+            except Exception as e:
+                logger.warning(f"Could not launch live dashboard automatically: {e}")
+
+        if self._dashboard_url:
+            print("\n" + "=" * 80)
+            print(f"📊 LLM-RL LIVE DASHBOARD URL: {self._dashboard_url}")
+            print(f"🌐 Monitoring live reward curves, loss plots & trajectories in background without disturbing training.")
+            print("=" * 80 + "\n")
+
         logger.info(f"Starting RL training for {total_timesteps} timesteps...")
         self.model.learn(total_timesteps=total_timesteps, callback=callbacks, **kwargs)
         logger.info("Training complete.")
         return self.model
 
-    def dashboard(self, port: int = 7860, share: bool = False):
-        """Launch interactive Gradio Dashboard."""
+    def dashboard(self, port: int = 7860, share: bool = False) -> str:
+        """
+        Launch interactive non-blocking Gradio Dashboard in background thread.
+
+        Returns:
+            URL string of the running dashboard.
+        """
         from llm_rl.dashboard import launch_dashboard
-        return launch_dashboard(self, port=port, share=share)
+        url = launch_dashboard(self, port=port, share=share)
+        self._dashboard_url = url
+        return url
 
     def explain_action(
         self,
