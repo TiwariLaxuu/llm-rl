@@ -2,7 +2,22 @@
 Helper functions and formatting utilities for LLM-RL.
 """
 
+import socket
 from typing import Any, List, Dict
+
+
+def find_free_port(start_port: int = 7860, max_tries: int = 50) -> int:
+    """
+    Find an available TCP port starting from start_port.
+    """
+    for port in range(start_port, start_port + max_tries):
+        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+            try:
+                s.bind(('127.0.0.1', port))
+                return port
+            except OSError:
+                continue
+    return start_port
 
 
 def format_observation(obs: Any) -> str:

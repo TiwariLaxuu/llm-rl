@@ -1,10 +1,11 @@
 """
-Gradio Interactive Dashboard for LLM-RL with Live Background Monitoring & Plotting.
+Gradio Interactive Dashboard for LLM-RL with Live Background Monitoring & Dynamic Port Discovery.
 """
 
 from typing import Any, Optional
 import matplotlib.pyplot as plt
 import numpy as np
+from llm_rl.utils.helpers import find_free_port
 from llm_rl.logger import logger
 
 try:
@@ -87,12 +88,14 @@ def format_trajectories_info(trajectories):
 def launch_dashboard(trainer: Any, port: int = 7860, share: bool = False):
     """
     Launch Gradio Web Interface for background LLM-RL live monitoring.
+    Automatically finds an available port if the specified port is in use.
     """
     if not GRADIO_AVAILABLE:
         logger.error("Gradio is not installed. Please run `pip install gradio` to launch dashboard.")
         return None
 
     monitor = trainer.monitor
+    target_port = find_free_port(start_port=port)
 
     with gr.Blocks(title="LLM-RL Live Dashboard") as demo:
         gr.Markdown(
@@ -205,7 +208,7 @@ def launch_dashboard(trainer: Any, port: int = 7860, share: bool = False):
 
     app, local_url, share_url = demo.launch(
         server_name="127.0.0.1",
-        server_port=port,
+        server_port=target_port,
         share=share,
         prevent_thread_lock=True,
         theme=gr.themes.Soft()
