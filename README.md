@@ -5,7 +5,7 @@
 The framework is designed to be lightweight, modular, and compatible with existing reinforcement learning libraries such as **Stable-Baselines3** and **Gymnasium**.
 
 ---
-
+<img src="assets/image1.png" alt="Preview" width="500">
 ## 🚀 Features
 
 - 🤖 LLM-assisted reinforcement learning
