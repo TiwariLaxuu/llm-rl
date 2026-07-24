@@ -131,7 +131,21 @@ Generate reports after training containing:
 
 ---
 
-## Installation
+## ⚡ Installation
+
+Fast installation using [uv](https://github.com/astral-sh/uv):
+
+```bash
+# Using uv (Recommended for ultra-fast setup)
+uv pip install llm-rl
+
+# Or for local development from source
+git clone https://github.com/TiwariLaxuu/llm-rl.git
+cd llm-rl
+uv pip install -e .
+```
+
+Or using standard `pip`:
 
 ```bash
 pip install llm-rl
@@ -161,22 +175,31 @@ trainer.train(100000)
 
 ---
 
-## Dashboard
+## 🌐 Live Background Dashboard API
 
-Launch the interactive dashboard.
+When `trainer.train(...)` is called, LLM-RL automatically launches a non-blocking background web server on `http://127.0.0.1:7860` (or `http://localhost:7860`).
 
-```python
-trainer.dashboard()
+```bash
+================================================================================
+📊 LLM-RL LIVE DASHBOARD URL: http://127.0.0.1:7860/
+🌐 Monitoring live reward curves, loss plots & trajectories in background without disturbing training.
+================================================================================
 ```
 
-Features include:
+You can also launch or customize the dashboard manually:
 
-- Live reward curve
-- Training statistics
-- Interactive LLM chat
-- Policy explanations
-- Episode summaries
-- Generated reports
+```python
+trainer.dashboard(port=7860)
+```
+
+### Features include:
+
+- 📈 **Live Reward Plot**: Real-time episode return curve and moving averages auto-updating every 2 seconds.
+- 📉 **Live Loss Plots**: Real-time Policy Gradient Loss, Value Loss, and Entropy curves.
+- 📜 **Live Trajectories Table**: Real-time history of episode steps, returns, and state/action samples.
+- 💬 **Interactive LLM Copilot Chat**: Query training progress and diagnose issues directly over local API.
+- 🔍 **Policy Explanations**: Real-time state observation & action decision explanations.
+- 📝 **Report Generator**: One-click training report generation.
 
 ---
 
